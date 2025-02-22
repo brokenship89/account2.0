@@ -1,9 +1,19 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import LoginForm from './components/LoginForm.vue'
 import RegisterForm from './components/RegisterForm.vue'
 
+const router = useRouter()
 const currentView = ref('login')
+
+// 检查是否已登录
+onMounted(() => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    router.push('/') // 如果已登录，跳转到首页
+  }
+})
 
 const handleLogin = (formData) => {
   console.log('登录数据：', formData)

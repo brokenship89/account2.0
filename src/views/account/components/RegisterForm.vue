@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from 'vue'
+import { accountApi } from '@/api'
+import { useRouter } from 'vue-router'
 
 const registerForm = ref({
   phone: '',
@@ -13,6 +15,8 @@ const timer = ref(null)
 
 const emit = defineEmits(['register', 'switchToLogin'])
 
+const router = useRouter()
+
 const startCountdown = () => {
   countdown.value = 60
   timer.value = setInterval(() => {
@@ -23,19 +27,111 @@ const startCountdown = () => {
   }, 1000)
 }
 
-const handleSendCode = () => {
+const handleSendCode = async () => {
   if (countdown.value > 0) return
-  // 这里添加发送验证码的逻辑
-  console.log('发送验证码到：', registerForm.value.phone)
-  startCountdown()
-}
-
-const handleRegister = () => {
-  if (registerForm.value.password !== registerForm.value.confirmPassword) {
-    alert('两次输入的密码不一致')
+  
+  // 添加手机号验证
+  if (!registerForm.value.phone) {
+    alert('请输入手机号')
     return
   }
-  emit('register', registerForm.value)
+  
+  // 添加手机号格式验证
+  const phoneRegex = /^1[3-9]\d{9}$/
+  if (!phoneRegex.test(registerForm.value.phone)) {
+    alert('请输入正确的手机号格式')
+    return
+  }
+
+  try {
+    await accountApi.sendCode(registerForm.value.phone, 'register')
+    startCountdown()
+  } catch (error) {
+    // 更详细的错误处理
+    const errorMsg = error.response?.data?.non_field_errors?.[0] || 
+                    error.response?.data?.message || 
+                    '发送验证码失败'
+    alert(errorMsg)
+    console.error('发送验证码失败：', error.response?.data)
+  }
+}
+
+const handleRegister = async () => {
+  try {
+    // 表单验证
+    if (!registerForm.value.phone) {
+      alert('请输入手机号')
+      return
+    }
+    if (!registerForm.value.code) {
+      alert('请输入验证码')
+      return
+    }
+    if (!registerForm.value.password) {
+      alert('请输入密码')
+      return
+    }
+    if (registerForm.value.password !== registerForm.value.confirmPassword) {
+      alert('两次输入的密码不一致')
+      return
+    }
+
+    try {
+      // 1. 先验证验证码
+      const verifyRes = await accountApi.verifyPhone({
+        phone: registerForm.value.phone,
+        code: registerForm.value.code
+      })
+      console.log('验证码验证成功：', verifyRes)
+
+      // 2. 设置密码
+      if (!verifyRes.temp_token) {
+        throw new Error('未获取到临时令牌')
+      }
+
+      // 使用返回的 temp_token 设置密码
+      const setPasswordRes = await accountApi.setPassword({
+        password: registerForm.value.password,
+        confirm_password: registerForm.value.confirmPassword
+      }, verifyRes.temp_token)
+      console.log('密码设置成功：', setPasswordRes)
+
+      // 3. 注册成功后自动登录
+      const loginRes = await accountApi.login({
+        phone: registerForm.value.phone,
+        password: registerForm.value.password
+      })
+      console.log('登录成功：', loginRes)
+
+      // 保存token
+      const token = `Token ${loginRes.access_token}`
+      localStorage.setItem('token', token)
+
+      // 保存 refresh_token（如果需要的话）
+      if (loginRes.refresh_token) {
+        localStorage.setItem('refresh_token', loginRes.refresh_token)
+      }
+
+      // 4. 提示成功
+      alert('注册成功')
+      router.push('/')
+    } catch (error) {
+      let errorMsg = '操作失败'
+      if (error.response?.data) {
+        if (error.response.data.non_field_errors) {
+          errorMsg = error.response.data.non_field_errors[0]
+        } else if (error.response.data.message) {
+          errorMsg = error.response.data.message
+        } else if (error.response.data.error) {
+          errorMsg = error.response.data.error
+        }
+      }
+      alert(errorMsg)
+      console.error('注册过程错误：', error.response?.data || error)
+    }
+  } catch (error) {
+    console.error('注册失败：', error)
+  }
 }
 </script>
 
@@ -51,6 +147,8 @@ const handleRegister = () => {
           type="tel"
           class="form-input"
           placeholder="请输入手机号"
+          maxlength="11"
+          @input="registerForm.phone = registerForm.phone.replace(/\D/g, '')"
         />
       </div>
       

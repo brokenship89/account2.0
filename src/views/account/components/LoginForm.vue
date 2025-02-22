@@ -1,16 +1,92 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
+import { accountApi } from '@/api'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const loginForm = ref({
   phone: '',
   password: ''
 })
 
+const rememberMe = ref(false)
+
 const emit = defineEmits(['login', 'switchToRegister'])
 
-const handleLogin = () => {
-  emit('login', loginForm.value)
+const handleLogin = async () => {
+  try {
+    const res = await accountApi.login(loginForm.value)
+    console.log('登录响应：', res)
+    
+    if (!res || !res.access_token) {
+      throw new Error('登录响应格式错误')
+    }
+    
+    // 保存token
+    const token = `Token ${res.access_token}`
+    localStorage.setItem('token', token)
+    
+    // 保存 refresh_token
+    if (res.refresh_token) {
+      localStorage.setItem('refresh_token', res.refresh_token)
+    }
+    
+    // 如果记住我，保存登录信息
+    if (rememberMe.value) {
+      localStorage.setItem('phone', loginForm.value.phone)
+      // 使用简单加密保存密码（生产环境建议使用更安全的方式）
+      localStorage.setItem('password', btoa(loginForm.value.password))
+      localStorage.setItem('rememberMe', 'true')
+    } else {
+      // 如果取消记住我，清除所有保存的登录信息
+      localStorage.removeItem('phone')
+      localStorage.removeItem('password')
+      localStorage.removeItem('rememberMe')
+    }
+
+    router.push('/')
+  } catch (error) {
+    console.error('登录失败：', error)
+    if (error.response?.data) {
+      alert(error.response.data.message || error.response.data.detail || '登录失败')
+    } else {
+      alert(error.message || '登录失败')
+    }
+  }
 }
+
+// 页面加载时检查是否有保存的登录信息
+const initSavedLoginInfo = () => {
+  const savedRememberMe = localStorage.getItem('rememberMe')
+  if (savedRememberMe === 'true') {
+    const savedPhone = localStorage.getItem('phone')
+    const savedPassword = localStorage.getItem('password')
+    
+    if (savedPhone) {
+      loginForm.value.phone = savedPhone
+    }
+    if (savedPassword) {
+      // 解密密码
+      try {
+        loginForm.value.password = atob(savedPassword)
+      } catch (e) {
+        console.error('密码解密失败')
+      }
+    }
+    rememberMe.value = true
+  }
+}
+
+// 在组件挂载时初始化
+initSavedLoginInfo()
+
+// 在组件卸载时清理（如果需要的话）
+onUnmounted(() => {
+  if (!rememberMe.value) {
+    loginForm.value.phone = ''
+    loginForm.value.password = ''
+  }
+})
 </script>
 
 <template>
@@ -42,7 +118,11 @@ const handleLogin = () => {
       <div class="flex justify-between items-center mb-6">
         <div class="flex items-center space-x-4">
           <label class="flex items-center">
-            <input type="checkbox" class="w-4 h-4 rounded border-2 border-gray-300 text-primary">
+            <input 
+              type="checkbox" 
+              v-model="rememberMe"
+              class="w-4 h-4 rounded border-2 border-gray-300 text-primary"
+            >
           </label>
           <span class="text-sm text-gray-600">记住我</span>
         </div>
