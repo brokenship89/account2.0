@@ -16,7 +16,6 @@ const emit = defineEmits(['login', 'switchToRegister', 'switchToReset'])
 const handleLogin = async () => {
   try {
     const res = await accountApi.login(loginForm.value)
-    console.log('登录响应：', res)
     
     if (!res || !res.access_token) {
       throw new Error('登录响应格式错误')
@@ -36,22 +35,10 @@ const handleLogin = async () => {
     const ONE_DAY = 24 * 60 * 60
     const expiresAt = now + (rememberMe.value ? 14 * ONE_DAY : ONE_DAY)
     
-    // 打印当前时间和过期时间，方便调试
-    console.log('当前时间：', new Date(now * 1000).toLocaleString())
-    console.log('过期时间：', new Date(expiresAt * 1000).toLocaleString())
-    console.log('过期时间戳：', expiresAt)
-    
+    // 保存过期时间和记住我状态
     localStorage.setItem('expiresAt', expiresAt.toString())
-    
-    // 只有记住我时才保存手机号和记住我状态
-    if (rememberMe.value) {
-      localStorage.setItem('phone', loginForm.value.phone)
-      localStorage.setItem('rememberMe', 'true')
-    } else {
-      // 如果不记住，只清除记住相关的信息，保留过期时间
-      localStorage.removeItem('phone')
-      localStorage.removeItem('rememberMe')
-    }
+    localStorage.setItem('rememberMe', rememberMe.value.toString())
+    localStorage.setItem('phone', loginForm.value.phone)
 
     router.push('/')
   } catch (error) {

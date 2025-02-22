@@ -7,7 +7,8 @@ const registerForm = ref({
   phone: '',
   code: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  tempToken: ''
 })
 
 const countdown = ref(0)
@@ -30,13 +31,13 @@ const startCountdown = () => {
 const handleSendCode = async () => {
   if (countdown.value > 0) return
   
-  // 添加手机号验证
+  // 手机号验证
   if (!registerForm.value.phone) {
     alert('请输入手机号')
     return
   }
   
-  // 添加手机号格式验证
+  // 手机号格式验证
   const phoneRegex = /^1[3-9]\d{9}$/
   if (!phoneRegex.test(registerForm.value.phone)) {
     alert('请输入正确的手机号格式')
@@ -44,10 +45,13 @@ const handleSendCode = async () => {
   }
 
   try {
-    await accountApi.sendCode(registerForm.value.phone, 'register')
+    const res = await accountApi.sendCode(registerForm.value.phone, 'register')
+    // 保存临时token
+    if (res.temp_token) {
+      registerForm.value.tempToken = res.temp_token
+    }
     startCountdown()
   } catch (error) {
-    // 处理频率限制错误
     if (error.data?.remaining_time) {
       countdown.value = error.data.remaining_time
       startCountdown()
@@ -77,51 +81,29 @@ const handleRegister = async () => {
     }
 
     try {
-      // 1. 先验证验证码
-      const verifyRes = await accountApi.verifyPhone({
-        phone: registerForm.value.phone,
-        code: registerForm.value.code
-      })
-      console.log('验证码验证成功：', verifyRes)
-
-      // 2. 设置密码
-      if (!verifyRes.temp_token) {
-        throw new Error('未获取到临时令牌')
-      }
-
-      const setPasswordRes = await accountApi.setPassword({
+      // 使用发送验证码时获得的临时token设置密码
+      await accountApi.setPassword({
         password: registerForm.value.password,
         confirm_password: registerForm.value.confirmPassword
-      }, verifyRes.temp_token)
-      console.log('密码设置成功：', setPasswordRes)
+      }, registerForm.value.tempToken)
 
-      // 3. 注册成功后自动登录
+      // 注册成功后自动登录
       const loginRes = await accountApi.login({
         phone: registerForm.value.phone,
         password: registerForm.value.password
       })
-      console.log('登录成功：', loginRes)
 
-      // 4. 保存token并直接跳转
+      // 保存token
       const token = `Token ${loginRes.access_token}`
       localStorage.setItem('token', token)
-
+      
       if (loginRes.refresh_token) {
         localStorage.setItem('refresh_token', loginRes.refresh_token)
       }
 
-      // 直接跳转到首页，不显示提示
       router.push('/')
-      
     } catch (error) {
-      // 更具体的错误提示
-      if (error.data?.code) {
-        alert('验证码错误')
-      } else if (error.data?.phone) {
-        alert(error.message)
-      } else {
-        alert(error.message || '注册失败')
-      }
+      alert(error.message)
       console.error('注册过程错误：', error.data)
     }
   } catch (error) {

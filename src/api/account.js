@@ -4,23 +4,8 @@ export const accountApi = {
   // 发送验证码
   sendCode: (phone, verifyType = 'register') => {
     const data = { phone, verify_type: verifyType }
-    console.log('发送验证码请求：', {
-      url: 'accounts/send-code/',
-      method: 'post',
-      data
-    })
     return request({
       url: 'accounts/send-code/',
-      method: 'post',
-      data
-    })
-  },
-
-  // 验证验证码
-  verifyPhone: (data) => {
-    console.log('验证验证码请求参数：', data)
-    return request({
-      url: 'accounts/verify-phone/',
       method: 'post',
       data
     })
@@ -32,10 +17,12 @@ export const accountApi = {
       url: 'accounts/set-password/',
       method: 'post',
       headers: {
-        'X-Temp-Token': tempToken,
-        'Content-Type': 'application/json'
+        'X-Temp-Token': tempToken
       },
-      data
+      data: {
+        password: data.password,
+        confirm_password: data.confirm_password
+      }
     })
   },
 
@@ -80,6 +67,46 @@ export const accountApi = {
       url: 'accounts/refresh-token/',
       method: 'post',
       data
+    })
+  },
+
+  // 获取用户资料
+  getUserProfile: () => {
+    return request({
+      url: 'accounts/user/profile/',
+      method: 'get'
+    })
+  },
+
+  // 修改用户名
+  updateUsername: (username) => {
+    return request({
+      url: 'accounts/user/profile/',
+      method: 'put',
+      data: { username }
+    })
+  },
+
+  // 修改用户性别
+  updateGender: (gender) => {
+    return request({
+      url: 'accounts/user/update-gender/',
+      method: 'put',
+      data: { gender }
+    })
+  },
+
+  // 更新头像
+  updateAvatar: (avatarFile) => {
+    const formData = new FormData()
+    formData.append('avatar', avatarFile)
+    return request({
+      url: 'accounts/user/avatar/',
+      method: 'put',
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      data: formData
     })
   }
 } 
