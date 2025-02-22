@@ -31,16 +31,25 @@ const handleLogin = async () => {
       localStorage.setItem('refresh_token', res.refresh_token)
     }
     
-    // 如果记住我，保存登录信息
+    // 设置过期时间 - 记住我14天，不记住1天
+    const now = Math.floor(Date.now() / 1000)
+    const ONE_DAY = 24 * 60 * 60
+    const expiresAt = now + (rememberMe.value ? 14 * ONE_DAY : ONE_DAY)
+    
+    // 打印当前时间和过期时间，方便调试
+    console.log('当前时间：', new Date(now * 1000).toLocaleString())
+    console.log('过期时间：', new Date(expiresAt * 1000).toLocaleString())
+    console.log('过期时间戳：', expiresAt)
+    
+    localStorage.setItem('expiresAt', expiresAt.toString())
+    
+    // 只有记住我时才保存手机号和记住我状态
     if (rememberMe.value) {
       localStorage.setItem('phone', loginForm.value.phone)
-      // 使用简单加密保存密码（生产环境建议使用更安全的方式）
-      localStorage.setItem('password', btoa(loginForm.value.password))
       localStorage.setItem('rememberMe', 'true')
     } else {
-      // 如果取消记住我，清除所有保存的登录信息
+      // 如果不记住，只清除记住相关的信息，保留过期时间
       localStorage.removeItem('phone')
-      localStorage.removeItem('password')
       localStorage.removeItem('rememberMe')
     }
 
@@ -58,30 +67,37 @@ const handleLogin = async () => {
 // 页面加载时检查是否有保存的登录信息
 const initSavedLoginInfo = () => {
   const savedRememberMe = localStorage.getItem('rememberMe')
-  if (savedRememberMe === 'true') {
-    const savedPhone = localStorage.getItem('phone')
-    const savedPassword = localStorage.getItem('password')
+  const expiresAt = localStorage.getItem('expiresAt')
+  
+  // 只有在选择了记住我且未过期的情况下才填充手机号
+  if (savedRememberMe === 'true' && expiresAt) {
+    const now = Math.floor(Date.now() / 1000)
+    const expireTime = parseInt(expiresAt)
     
-    if (savedPhone) {
-      loginForm.value.phone = savedPhone
-    }
-    if (savedPassword) {
-      // 解密密码
-      try {
-        loginForm.value.password = atob(savedPassword)
-      } catch (e) {
-        console.error('密码解密失败')
+    console.log('当前时间：', new Date(now * 1000).toLocaleString())
+    console.log('过期时间：', new Date(expireTime * 1000).toLocaleString())
+    
+    if (now < expireTime) {
+      const savedPhone = localStorage.getItem('phone')
+      if (savedPhone) {
+        loginForm.value.phone = savedPhone
+        rememberMe.value = true
       }
+    } else {
+      // 如果已过期，清除所有保存的信息
+      localStorage.removeItem('phone')
+      localStorage.removeItem('rememberMe')
+      localStorage.removeItem('expiresAt')
     }
-    rememberMe.value = true
   }
 }
 
 // 在组件挂载时初始化
 initSavedLoginInfo()
 
-// 在组件卸载时清理（如果需要的话）
+// 在组件卸载时清理
 onUnmounted(() => {
+  // 如果没有选择记住我，清空表单
   if (!rememberMe.value) {
     loginForm.value.phone = ''
     loginForm.value.password = ''
@@ -92,7 +108,7 @@ onUnmounted(() => {
 <template>
   <div class="register-form">
     <h3 class="text-2xl md:text-3xl font-bold mb-8 md:mb-12">登录</h3>
-    <form @submit.prevent="handleLogin" class="w-full max-w-[400px]">
+    <form @submit.prevent="handleLogin" class="w-full max-w-[400px]" autocomplete="off">
       <div class="form-item">
         <label for="phone" class="form-label">手机号</label>
         <input
@@ -101,6 +117,7 @@ onUnmounted(() => {
           type="tel"
           class="form-input"
           placeholder="请输入手机号"
+          autocomplete="off"
         />
       </div>
       
@@ -112,6 +129,7 @@ onUnmounted(() => {
           type="password"
           class="form-input"
           placeholder="请输入密码"
+          autocomplete="new-password"
         />
       </div>
       

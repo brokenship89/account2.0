@@ -12,19 +12,20 @@ const request = axios.create({
 request.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
-    if (token) {
-      // 确保 token 格式正确
+    
+    // 只有需要认证的接口才添加 token
+    if (token && !config.url.includes('send-code')) {
       config.headers['Authorization'] = token.startsWith('Token ') ? token : `Token ${token}`
-      console.log('发送请求的 token：', config.headers['Authorization'])
-    } else {
-      console.log('没有找到 token')
     }
-    console.log('完整请求配置：', {
+
+    // 更清晰的请求日志
+    console.log('发送请求：', {
       url: config.url,
       method: config.method,
-      headers: config.headers,
-      data: config.data
+      data: config.data,
+      needAuth: !config.url.includes('send-code') // 标记是否需要认证
     })
+
     return config
   },
   error => {
@@ -35,12 +36,26 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   response => {
-    console.log('完整响应数据：', response)
+    // 更清晰的响应日志
+    console.log('请求成功：', {
+      url: response.config.url,
+      method: response.config.method,
+      status: response.status,
+      data: response.data,
+      message: response.data.message || '请求成功'
+    })
     return response.data
   },
   error => {
     if (error.response) {
-      console.log('错误响应：', error.response)
+      // 更清晰的错误日志
+      console.error('请求失败：', {
+        url: error.config.url,
+        method: error.config.method,
+        status: error.response.status,
+        error: error.response.data.error || error.response.data.message || '未知错误',
+        details: error.response.data
+      })
       // token 过期或无效
       if (error.response.status === 401 && !error.config.url.includes('logout')) {
         // 只有在非登出请求时才自动清除 token 并跳转

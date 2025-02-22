@@ -3,14 +3,16 @@ import request from './request'
 export const accountApi = {
   // 发送验证码
   sendCode: (phone, verifyType = 'register') => {
-    console.log('发送验证码请求参数：', { phone, verify_type: verifyType })
+    const data = { phone, verify_type: verifyType }
+    console.log('发送验证码请求：', {
+      url: 'accounts/send-code/',
+      method: 'post',
+      data
+    })
     return request({
       url: 'accounts/send-code/',
       method: 'post',
-      data: {
-        phone,
-        verify_type: verifyType
-      }
+      data
     })
   },
 

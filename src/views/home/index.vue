@@ -6,18 +6,21 @@ const router = useRouter()
 
 const handleLogout = async () => {
   try {
-    const token = localStorage.getItem('token')
-    console.log('退出登录时的 token：', token)
-    
     await accountApi.logout()
 
-    // 清除所有相关的存储数据
+    // 获取记住我的状态
+    const rememberMe = localStorage.getItem('rememberMe')
+    
+    // 总是需要清除的 token 相关信息
     localStorage.removeItem('token')
     localStorage.removeItem('refresh_token')
-    localStorage.removeItem('phone')
-    
-    // 可以考虑使用 localStorage.clear() 清除所有数据
-    // localStorage.clear()
+
+    // 如果没有选择记住我，或者记住我状态不存在，清除所有信息
+    if (!rememberMe || rememberMe !== 'true') {
+      localStorage.removeItem('phone')
+      localStorage.removeItem('rememberMe')
+      localStorage.removeItem('expiresAt')
+    }
 
     router.push('/auth')
   } catch (error) {

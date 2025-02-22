@@ -47,11 +47,18 @@ const handleSendCode = async () => {
     await accountApi.sendCode(registerForm.value.phone, 'register')
     startCountdown()
   } catch (error) {
-    // 更详细的错误处理
-    const errorMsg = error.response?.data?.non_field_errors?.[0] || 
-                    error.response?.data?.message || 
-                    '发送验证码失败'
-    alert(errorMsg)
+    // 处理频率限制错误
+    if (error.response?.data?.remaining_time) {
+      countdown.value = error.response.data.remaining_time
+      startCountdown()
+      alert(`请等待 ${error.response.data.remaining_time} 秒后再试`)
+    } else {
+      // 其他错误处理
+      const errorMsg = error.response?.data?.error || 
+                      error.response?.data?.message || 
+                      '发送验证码失败'
+      alert(errorMsg)
+    }
     console.error('发送验证码失败：', error.response?.data)
   }
 }
@@ -89,7 +96,6 @@ const handleRegister = async () => {
         throw new Error('未获取到临时令牌')
       }
 
-      // 使用返回的 temp_token 设置密码
       const setPasswordRes = await accountApi.setPassword({
         password: registerForm.value.password,
         confirm_password: registerForm.value.confirmPassword
@@ -103,18 +109,17 @@ const handleRegister = async () => {
       })
       console.log('登录成功：', loginRes)
 
-      // 保存token
+      // 4. 保存token并直接跳转
       const token = `Token ${loginRes.access_token}`
       localStorage.setItem('token', token)
 
-      // 保存 refresh_token（如果需要的话）
       if (loginRes.refresh_token) {
         localStorage.setItem('refresh_token', loginRes.refresh_token)
       }
 
-      // 4. 提示成功
-      alert('注册成功')
+      // 直接跳转到首页，不显示提示
       router.push('/')
+      
     } catch (error) {
       let errorMsg = '操作失败'
       if (error.response?.data) {
