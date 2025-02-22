@@ -78,7 +78,7 @@ const handleReset = async () => {
     await accountApi.resetPassword({
       phone: resetForm.value.phone,
       code: resetForm.value.code,
-      password: resetForm.value.password,
+      new_password: resetForm.value.password,
       confirm_password: resetForm.value.confirmPassword
     })
 

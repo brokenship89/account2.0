@@ -37,7 +37,7 @@ const switchView = (view) => {
       <div class="auth-content">
         <div class="auth-left hidden md:block">
           <div class="brand-content">
-            <h2 class="welcome-text">用户中心</h2>
+            <h2 class="welcome-text">Account</h2>
             <p class="slogan-text">简单 · 高效 · 安全</p>
             <div class="decoration-circle"></div>
             <div class="decoration-circle-2"></div>
@@ -45,7 +45,7 @@ const switchView = (view) => {
         </div>
         <div class="auth-right">
           <div class="brand-content-mobile md:hidden mb-8">
-            <h2 class="text-4xl font-bold text-primary mb-2">用户中心</h2>
+            <h2 class="text-4xl font-bold text-primary mb-2">Account</h2>
             <p class="text-gray-500">简单 · 高效 · 安全</p>
           </div>
           
