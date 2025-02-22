@@ -3,13 +3,17 @@
 </script>
 
 <template>
-  <router-view class="h-full w-full"></router-view>
+  <router-view class="min-h-screen"></router-view>
 </template>
 
 <style>
-html, body {
+html, body, #app {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+#app {
+  min-height: 100vh;
 }
 </style>

@@ -24,7 +24,7 @@ const switchView = (view) => {
   <div class="bg-primary">
     <div class="auth-container">
       <div class="auth-content">
-        <div class="auth-left">
+        <div class="auth-left hidden md:block">
           <div class="brand-content">
             <h2 class="welcome-text">Account</h2>
             <p class="slogan-text">简单 · 高效 · 安全</p>
@@ -33,6 +33,11 @@ const switchView = (view) => {
           </div>
         </div>
         <div class="auth-right">
+          <div class="brand-content-mobile md:hidden mb-8">
+            <h2 class="text-4xl font-bold text-primary mb-2">Account</h2>
+            <p class="text-gray-500">简单 · 高效 · 安全</p>
+          </div>
+          
           <Transition name="fade" mode="out-in">
             <LoginForm
               v-if="currentView === 'login'"
@@ -57,7 +62,8 @@ const switchView = (view) => {
 }
 
 .auth-content {
-  @apply flex w-[1100px] h-[650px] bg-white rounded-[24px] shadow-2xl overflow-hidden;
+  @apply flex w-full md:w-[1100px] h-auto md:h-[650px] bg-white 
+    rounded-none md:rounded-[24px] shadow-none md:shadow-2xl overflow-hidden;
 }
 
 .auth-left {
@@ -69,11 +75,11 @@ const switchView = (view) => {
 }
 
 .welcome-text {
-  @apply text-6xl font-bold text-white mb-6 relative z-30;
+  @apply text-4xl md:text-6xl font-bold text-white mb-4 md:mb-6 relative z-30;
 }
 
 .slogan-text {
-  @apply text-2xl text-white/80 relative z-30;
+  @apply text-xl md:text-2xl text-white/80 relative z-30;
 }
 
 .decoration-circle {
@@ -81,17 +87,53 @@ const switchView = (view) => {
   top: -150px;
   right: -150px;
   z-index: 10;
+  animation: float1 12s ease-in-out infinite;
 }
 
 .decoration-circle-2 {
-  @apply absolute w-[300px] h-[300px] rounded-full bg-secondary/30;
+  @apply absolute w-[300px] h-[300px] rounded-full;
+  background-color: rgba(82, 219, 213, 0.12);
   bottom: -80px;
   left: -80px;
   z-index: 10;
+  animation: float2 10s ease-in-out infinite;
+}
+
+@keyframes float1 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(-40px, 40px) rotate(8deg);
+  }
+  50% {
+    transform: translate(30px, -35px) rotate(-6deg);
+  }
+  75% {
+    transform: translate(35px, 25px) rotate(4deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes float2 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(35px, -35px) rotate(-8deg);
+  }
+  66% {
+    transform: translate(-30px, 30px) rotate(10deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
 }
 
 .auth-right {
-  @apply w-[55%] flex items-center justify-center bg-white px-8;
+  @apply w-full md:w-[55%] flex flex-col items-center justify-center bg-white px-4 md:px-8 py-8;
 }
 
 .auth-right :deep(.form-container) {
@@ -135,5 +177,17 @@ const switchView = (view) => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+
+@media (max-width: 768px) {
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.3s ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
 }
 </style> 

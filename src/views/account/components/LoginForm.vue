@@ -15,8 +15,8 @@ const handleLogin = () => {
 
 <template>
   <div class="register-form">
-    <h3 class="text-3xl font-bold mb-12">登录</h3>
-    <form @submit.prevent="handleLogin" class="w-[400px]">
+    <h3 class="text-2xl md:text-3xl font-bold mb-8 md:mb-12">登录</h3>
+    <form @submit.prevent="handleLogin" class="w-full max-w-[400px]">
       <div class="form-item">
         <label for="phone" class="form-label">手机号</label>
         <input
@@ -64,7 +64,7 @@ const handleLogin = () => {
 
 <style scoped>
 .register-form {
-  @apply w-full px-16 py-8;
+  @apply w-full px-4 md:px-16 py-4 md:py-8;
 }
 
 .form-item {
