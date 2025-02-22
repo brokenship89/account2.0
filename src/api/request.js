@@ -47,39 +47,76 @@ request.interceptors.response.use(
     return response.data
   },
   error => {
-    // 添加连接错误处理
+    // 网络连接错误
     if (!error.response) {
-      console.error('网络连接错误：', error)
-      error.message = '网络连接失败，请检查网络设置'
-      return Promise.reject(error)
+      return Promise.reject({
+        message: '网络连接失败，请检查网络设置'
+      })
     }
 
-    if (error.response) {
-      // 更清晰的错误日志
-      console.error('请求失败：', {
-        url: error.config.url,
-        method: error.config.method,
-        status: error.response.status,
-        error: error.response.data.error || error.response.data.message || '未知错误',
-        details: error.response.data
-      })
-      // token 过期或无效
-      if (error.response.status === 401 && !error.config.url.includes('logout')) {
-        // 只有在非登出请求时才自动清除 token 并跳转
-        localStorage.removeItem('token')
-        window.location.href = '/auth'
-      }
-      // 其他错误处理
-      const errorData = error.response.data
-      const errorMsg = errorData.non_field_errors?.[0] || 
-                      errorData.message || 
-                      errorData.error || 
-                      errorData.detail ||  // 添加对 detail 字段的处理
-                      '请求失败'
-      console.error('错误详情：', errorData)
-      error.message = errorMsg
+    // 处理后端返回的错误
+    const errorData = error.response.data
+    let errorMsg = '请求失败'
+
+    // 根据不同的错误类型返回不同的提示
+    switch (error.response.status) {
+      case 400:
+        // 处理验证错误
+        if (errorData.phone) {
+          // 手机号相关错误
+          if (error.config.url.includes('send-code')) {
+            if (errorData.phone.includes('already exists')) {
+              errorMsg = '该手机号已被注册'
+            } else {
+              errorMsg = errorData.phone[0]
+            }
+          } else {
+            errorMsg = errorData.phone[0]
+          }
+        } else if (errorData.password) {
+          errorMsg = errorData.password[0] // 密码相关错误
+        } else if (errorData.code) {
+          errorMsg = errorData.code[0] // 验证码相关错误
+        } else if (errorData.non_field_errors) {
+          errorMsg = errorData.non_field_errors[0] // 通用错误
+        } else if (errorData.error) {
+          // 处理直接返回 error 字段的情况
+          if (errorData.error.includes('验证码无效') || errorData.error.includes('已过期')) {
+            errorMsg = '验证码无效或已过期'
+          } else {
+            errorMsg = errorData.error
+          }
+        } else {
+          errorMsg = errorData.message || errorData.detail || '请求参数错误'
+        }
+        break
+      case 401:
+        errorMsg = '未登录或登录已过期'
+        // 清除 token 并跳转到登录页
+        if (!error.config.url.includes('logout')) {
+          localStorage.removeItem('token')
+          window.location.href = '/auth'
+        }
+        break
+      case 403:
+        errorMsg = '没有权限进行此操作'
+        break
+      case 404:
+        errorMsg = '请求的资源不存在'
+        break
+      case 429:
+        errorMsg = errorData.error || '请求过于频繁，请稍后再试'
+        break
+      default:
+        errorMsg = errorData.message || errorData.detail || '服务器错误'
     }
-    return Promise.reject(error)
+
+    // 返回处理后的错误
+    return Promise.reject({
+      status: error.response.status,
+      message: errorMsg,
+      data: errorData
+    })
   }
 )
 

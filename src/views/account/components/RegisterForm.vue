@@ -48,18 +48,11 @@ const handleSendCode = async () => {
     startCountdown()
   } catch (error) {
     // 处理频率限制错误
-    if (error.response?.data?.remaining_time) {
-      countdown.value = error.response.data.remaining_time
+    if (error.data?.remaining_time) {
+      countdown.value = error.data.remaining_time
       startCountdown()
-      alert(`请等待 ${error.response.data.remaining_time} 秒后再试`)
-    } else {
-      // 其他错误处理
-      const errorMsg = error.response?.data?.error || 
-                      error.response?.data?.message || 
-                      '发送验证码失败'
-      alert(errorMsg)
     }
-    console.error('发送验证码失败：', error.response?.data)
+    alert(error.message)
   }
 }
 
@@ -121,18 +114,15 @@ const handleRegister = async () => {
       router.push('/')
       
     } catch (error) {
-      let errorMsg = '操作失败'
-      if (error.response?.data) {
-        if (error.response.data.non_field_errors) {
-          errorMsg = error.response.data.non_field_errors[0]
-        } else if (error.response.data.message) {
-          errorMsg = error.response.data.message
-        } else if (error.response.data.error) {
-          errorMsg = error.response.data.error
-        }
+      // 更具体的错误提示
+      if (error.data?.code) {
+        alert('验证码错误')
+      } else if (error.data?.phone) {
+        alert(error.message)
+      } else {
+        alert(error.message || '注册失败')
       }
-      alert(errorMsg)
-      console.error('注册过程错误：', error.response?.data || error)
+      console.error('注册过程错误：', error.data)
     }
   } catch (error) {
     console.error('注册失败：', error)

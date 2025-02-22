@@ -55,12 +55,7 @@ const handleLogin = async () => {
 
     router.push('/')
   } catch (error) {
-    console.error('登录失败：', error)
-    if (error.response?.data) {
-      alert(error.response.data.message || error.response.data.detail || '登录失败')
-    } else {
-      alert(error.message || '登录失败')
-    }
+    alert(error.message)
   }
 }
 
