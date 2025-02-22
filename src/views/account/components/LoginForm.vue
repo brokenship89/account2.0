@@ -11,7 +11,7 @@ const loginForm = ref({
 
 const rememberMe = ref(false)
 
-const emit = defineEmits(['login', 'switchToRegister'])
+const emit = defineEmits(['login', 'switchToRegister', 'switchToReset'])
 
 const handleLogin = async () => {
   try {
@@ -139,7 +139,13 @@ onUnmounted(() => {
           </label>
           <span class="text-sm text-gray-600">记住我</span>
         </div>
-        <a href="#" class="text-sm text-secondary hover:text-primary transition-colors">忘记密码？</a>
+        <a 
+          href="#" 
+          class="text-sm text-secondary hover:text-primary transition-colors"
+          @click.prevent="emit('switchToReset')"
+        >
+          忘记密码？
+        </a>
       </div>
       
       <button type="submit" class="btn-submit">

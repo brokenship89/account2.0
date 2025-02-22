@@ -1,21 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Auth from '../views/account/auth.vue'
-import Home from '../views/home/index.vue'
+import Auth from '@/views/account/auth.vue'
+import UserCenter from '@/views/user-center/index.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: '/',
-      name: 'Home',
-      component: Home,
-      meta: { requiresAuth: true }
+      path: '/auth',
+      name: 'auth',
+      component: Auth
     },
     {
-      path: '/auth',
-      name: 'Auth',
-      component: Auth,
-      meta: { guest: true }
+      path: '/',
+      name: 'userCenter',
+      component: UserCenter,
+      meta: { requiresAuth: true }
     }
   ]
 })

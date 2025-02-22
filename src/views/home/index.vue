@@ -37,7 +37,7 @@ const handleLogout = async () => {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
-            <h1 class="text-xl font-bold text-gray-900">Account</h1>
+            <h1 class="text-xl font-bold text-gray-900">用户中心</h1>
           </div>
           <div class="flex items-center">
             <button
@@ -56,7 +56,7 @@ const handleLogout = async () => {
     <!-- 主要内容 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white shadow rounded-lg p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">欢迎使用 Account 系统</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">欢迎使用用户中心</h2>
         <p class="text-gray-600">
           这是一个安全的账户管理系统，您可以在这里管理您的账户信息。
         </p>
