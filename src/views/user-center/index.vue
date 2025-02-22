@@ -13,9 +13,11 @@ const generateUID = () => {
 // 模拟用户信息
 const userInfo = ref({
   phone: '15116224937',
-  gender: '♀', // 使用符号代替文字
+  gender: '♀',
   uid: generateUID(),
-  role: '普通用户',
+  address: '浙江省杭州市',
+  age: '21',
+  signature: '世界是一个巨大的菜鸟驿站',
   lastLogin: '2024-02-16 15:30'
 })
 
@@ -65,7 +67,10 @@ const handleLogout = async () => {
           <div class="flex items-center space-x-4">
             <!-- 用户头像和弹窗 -->
             <div class="relative group">
-              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer">
+              <div 
+                class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+                @click="router.push('/profile/edit')"
+              >
                 <svg 
                   class="w-6 h-6 text-gray-400" 
                   fill="none" 
@@ -82,14 +87,14 @@ const handleLogout = async () => {
               </div>
               
               <!-- 悬浮弹窗 -->
-              <div class="absolute right-0 top-14 w-72 bg-white rounded-lg shadow-lg py-6 px-6 
+              <div class="absolute right-0 top-14 w-80 bg-white rounded-lg shadow-lg py-6 px-6 
                           invisible opacity-0 group-hover:visible group-hover:opacity-100 
                           transition-all duration-300 z-50">
                 <!-- 用户信息 -->
                 <div class="relative">
-                  <div class="flex items-center space-x-4 mb-4">
-                    <div class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center">
-                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div class="flex items-start space-x-4 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mt-1">
+                      <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
@@ -123,7 +128,33 @@ const handleLogout = async () => {
                           </svg>
                         </button>
                       </div>
-                      <div class="text-sm text-gray-500 mt-1">{{ userInfo.role }}</div>
+                      <div class="mt-2">
+                        <div class="flex items-center gap-6 text-sm text-gray-500">
+                          <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            </div>
+                            <span>{{ userInfo.address }}</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M12 7v5l3 3" />
+                              </svg>
+                            </div>
+                            <span>{{ userInfo.age }}岁</span>
+                          </div>
+                        </div>
+                        <div class="mt-3 text-sm text-gray-600 font-medium">{{ userInfo.signature }}</div>
+                      </div>
                     </div>
                   </div>
                   

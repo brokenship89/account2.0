@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '@/views/home/index.vue'
 import Auth from '@/views/account/auth.vue'
 import UserCenter from '@/views/user-center/index.vue'
+import ProfileEdit from '@/views/user-center/profile-edit.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -14,6 +16,12 @@ const router = createRouter({
       path: '/',
       name: 'userCenter',
       component: UserCenter,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/profile/edit',
+      name: 'ProfileEdit',
+      component: ProfileEdit,
       meta: { requiresAuth: true }
     }
   ]
