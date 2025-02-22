@@ -11,11 +11,20 @@ export default defineConfig({
     cors: true,  // 允许跨域
     proxy: {
       '/api': {
-        target: 'http://192.168.3.22:8000',
+        target: 'http://192.168.3.22:8000',  // 确保这个地址是正确的
         changeOrigin: true,
         secure: false,
-        headers: {
-          'Access-Control-Allow-Headers': '*'
+        configure: (proxy, options) => {
+          // 添加错误处理
+          proxy.on('error', (err, req, res) => {
+            console.log('proxy error', err)
+          })
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Sending Request to the Target:', req.method, req.url)
+          })
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log('Received Response from the Target:', proxyRes.statusCode, req.url)
+          })
         }
       }
     }

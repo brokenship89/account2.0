@@ -47,6 +47,13 @@ request.interceptors.response.use(
     return response.data
   },
   error => {
+    // 添加连接错误处理
+    if (!error.response) {
+      console.error('网络连接错误：', error)
+      error.message = '网络连接失败，请检查网络设置'
+      return Promise.reject(error)
+    }
+
     if (error.response) {
       // 更清晰的错误日志
       console.error('请求失败：', {
